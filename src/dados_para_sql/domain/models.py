@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, Mapping
 
 from dados_para_sql.domain.enums import IssueSeverity, RecordStatus
 
@@ -48,3 +48,14 @@ class ProcessedRecord:
     status: RecordStatus
     issues: tuple[ValidationIssue, ...] = field(default_factory=tuple)
 
+
+@dataclass(frozen=True, slots=True)
+class SanitizedRecord:
+    """Resultado sanitizado de uma linha de entrada."""
+
+    source: SourceLocation
+    original_values: Mapping[str, str]
+    values: Mapping[str, str]
+    transformations: tuple[str, ...]
+    issues: tuple[ValidationIssue, ...]
+    status: RecordStatus
