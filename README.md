@@ -54,15 +54,41 @@ uv run pytest
 uv run ruff check .
 ```
 
-## Comandos previstos
+## Processamento inicial funcional
 
 ```bash
-dados-para-sql validate --profile cargo_update --input ./input --output ./output
-dados-para-sql dry-run --profile cargo_update --input ./input
-dados-para-sql import --profile cargo_update --input ./input --approved-execution-id <uuid>
+dados-para-sql process \
+  --input samples/input/cadastro_ficticio_malformatado.xlsx \
+  --output-dir output \
+  --table dbo.People \
+  --sql-mode script
 ```
 
-Por enquanto, somente `--version` está implementado. Os demais comandos serão entregues por etapas, com testes antes de liberar acesso de escrita ao banco.
+Saídas geradas:
+
+- `valid_records.csv`: somente registros aptos ou corrigidos com segurança;
+- `errors.csv`: uma linha por inconsistência, com arquivo, aba, linha, campo, valores original e tratado, motivo e ação sugerida;
+- `summary.json`: contagens da execução;
+- `inserts.sql`: script SQL Server revisável.
+
+### Flags de SQL
+
+| Flag | Valores | Efeito |
+|---|---|---|
+| `--sql-mode` | `none`, `script`, `execute`, `both` | Controla se gera script, executa no banco ou faz ambos. O padrão é `script`. |
+| `--table` | Ex.: `dbo.People` | Tabela de destino. Aceita somente identificadores simples e é delimitada com colchetes. |
+| `--sql-output` | Caminho de arquivo | Define o caminho do script gerado. |
+| `--sql-batch-size` | Número inteiro | Quantidade de registros por `INSERT`. |
+| `--no-transaction` | Flag | Omite o bloco `TRY/CATCH` e transação somente no arquivo de script. |
+| `--database-url` | URL SQLAlchemy | Obrigatória para `execute` ou `both`. Também pode vir de `DADOS_PARA_SQL_DATABASE_URL`. |
+
+O modo `execute` usa parâmetros e transação da conexão. Ele não executa o script literal, evitando que apóstrofos, acentos e dados da planilha virem SQL concatenado.
+
+O script gerado usa literais `N'...'` para preservar acentuação no SQL Server e duplica apóstrofos, como `D'Ávila` → `N'D''Ávila'`.
+
+## Massas de teste
+
+Os arquivos `samples/input/cadastro_ficticio_malformatado.xlsx` e `samples/input/cadastro_ficticio_malformatado.xls` possuem somente dados fictícios. Eles incluem aba de distração, cabeçalho deslocado, aspas e apóstrofos em nomes, CPF formatado e sem formatação, telefones variados, e-mails inválidos, endereço vazio e aceite LGPD em vários formatos.
 
 ## Versionamento
 
@@ -80,4 +106,3 @@ Por enquanto, somente `--version` está implementado. Os demais comandos serão 
 ## Próxima etapa
 
 Implementar os leitores de `.xlsx`, `.xls` e `.csv` com testes para preservar valores originais e identificar a aba correta.
-
