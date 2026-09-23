@@ -1,0 +1,54 @@
+[build-system]
+requires = ["hatchling>=1.27,<2"]
+build-backend = "hatchling.build"
+
+[project]
+name = "dados-para-sql"
+version = "0.1.0.dev1"
+description = "Valida, trata e prepara planilhas para importação segura em bancos de dados."
+readme = "README.md"
+requires-python = ">=3.12,<3.15"
+license = { text = "MIT" }
+authors = [{ name = "Wesley Aquino Dias" }]
+dependencies = [
+  "email-validator>=2.2,<3",
+  "openpyxl>=3.1,<4",
+  "pandas>=2.2,<4",
+  "PyYAML>=6.0,<7",
+  "SQLAlchemy>=2.0,<3",
+  "xlrd>=2.0,<3",
+  "XlsxWriter>=3.2,<4",
+]
+
+[project.optional-dependencies]
+sqlserver = ["pyodbc>=5.2,<6"]
+dev = [
+  "mypy>=1.13,<2",
+  "pytest>=8.3,<9",
+  "pytest-cov>=6,<8",
+  "ruff>=0.8,<1",
+]
+
+[project.scripts]
+dados-para-sql = "dados_para_sql.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/dados_para_sql"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+packages = ["dados_para_sql"]
+
